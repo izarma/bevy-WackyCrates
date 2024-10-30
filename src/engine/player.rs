@@ -22,8 +22,9 @@ impl Plugin for AddPlayerPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_event::<PlayerInputs>()
+        .add_event::<AnimationEvent>()
         .add_systems(OnEnter(GameState::InGame),setup_player)
-        .add_systems(Update, (keyboard_input,player_movement_state,(animate_sprite,update_player_animation).chain()).run_if(in_state(GameState::InGame)))
+        .add_systems(Update, (keyboard_input,player_movement_state,(animate_sprite,update_player_animation,).chain(),player_sprite_movement).run_if(in_state(GameState::InGame)))
         .add_systems(OnExit(GameState::InGame), despawn_player);
     }
 }

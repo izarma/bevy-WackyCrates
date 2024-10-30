@@ -12,10 +12,10 @@ pub fn keyboard_input(
     mut player_move_event: EventWriter<PlayerInputs>,
 ) {
     let mut movement = Vec2::ZERO;
-    if keyboard_input.just_pressed(KeyCode::ArrowLeft) {
+    if keyboard_input.pressed(KeyCode::ArrowLeft) {
         movement.x -= 1.0;
     }
-    if keyboard_input.just_pressed(KeyCode::ArrowRight) {
+    if keyboard_input.pressed(KeyCode::ArrowRight) {
         movement.x += 1.0;
     }
     if movement != Vec2::ZERO {
@@ -24,7 +24,7 @@ pub fn keyboard_input(
         player_move_event.send(PlayerInputs::Move(Vec2::ZERO));
     }
 
-    if keyboard_input.just_pressed(KeyCode::Space) {
+    if keyboard_input.pressed(KeyCode::Space) {
         player_move_event.send(PlayerInputs::Attack);
     }
 }
