@@ -9,24 +9,24 @@ pub struct SpriteAnimState {
     pub timer: Timer,
 }
 
-struct Animation {
-    frames: usize,
-    frame_size: UVec2,
-    texture_size: Vec2,
-    texture_handle: Handle<Image>,
+pub struct Animation {
+    pub frames: usize,
+    pub frame_size: UVec2,
+    pub texture_size: Vec2,
+    pub texture_handle: Handle<Image>,
 }
 
-fn animate_sprite(
+pub fn animate_sprite(
     time: Res<Time>,
-    mut q: Query<(&mut TextureAtlas, &mut SpriteAnimState)>,
+    mut query: Query<(&mut TextureAtlas, &mut SpriteAnimState)>,
 )
 {
-    for (mut atlas, mut anim) in q.iter_mut() {
-        anim.timer.tick(time.delta());
-        if anim.timer.finished() {
+    for (mut atlas, mut anim_state) in query.iter_mut() {
+        anim_state.timer.tick(time.delta());
+        if anim_state.timer.finished() {
             atlas.index += 1;
-            if atlas.index > anim.end_index {
-                atlas.index = anim.start_index;
+            if atlas.index > anim_state.end_index {
+                atlas.index = anim_state.start_index;
             }
         }
     }

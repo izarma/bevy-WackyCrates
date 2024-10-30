@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use crate::engine::player_input::PlayerInputs;
 use crate::engine::player::Player;
+use crate::engine::sprite_animation::Animation;
+use crate::engine::sprite_animation::SpriteAnimState;
 
 #[derive(Component, PartialEq, Eq, Debug, Clone, Copy)]
 pub enum PlayerState {
@@ -18,61 +20,11 @@ pub struct PlayerInputState {
     pub speed_multiplier: f32,
 }
 
-fn setup_sprite_animation(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
-) {
-    // Load textures for each animation
-
-    let idle_frames = 6;
-    let walk_frames = 10;
-    let _run_frames = 10;
-    let attack_frames = 4;
-    let _hurt_frames = 3;
-    let _dead_frames = 5;
-
-     // Define frame sizes
-    let frame_size = UVec2::new(128, 128);
-
-    // Create TextureAtlasLayouts
-    let idle_layout = TextureAtlasLayout::from_grid(frame_size as UVec2, idle_frames, 1, None, None);
-    let idle_layout_handle = texture_atlases.add(idle_layout);
-
-    let walk_layout = TextureAtlasLayout::from_grid(frame_size, walk_frames, 1, None, None);
-    let walk_layout_handle = texture_atlases.add(walk_layout);
-
-    let attack_layout = TextureAtlasLayout::from_grid(frame_size, attack_frames, 1, None, None);
-    let attack_layout_handle = texture_atlases.add(attack_layout);
-
-     // Define texture sizes (assuming horizontal sprite sheets)
-     let idle_texture_size = Vec2::new(idle_frames as f32 * frame_size.x as f32, frame_size.y as f32);
-     let walk_texture_size = Vec2::new(walk_frames as f32 * frame_size.x as f32, frame_size.y as f32);
-     let attack_texture_size = Vec2::new(attack_frames as f32 * frame_size.x as f32, frame_size.y as f32);
-
-    // Store animations in a resource
-    // commands.insert_resource(PlayerAnimations {
-    //     idle: Animation {
-    //         frames: idle_frames as usize,
-    //         frame_size,
-    //         texture_size: idle_texture_size,
-    //         texture_handle: idle_texture_handle.clone(),
-    //     },
-    //     walk: Animation {
-    //         frames: walk_frames as usize,
-    //         frame_size,
-    //         texture_size: walk_texture_size,
-    //         texture_handle: walk_texture_handle.clone(),
-    //     },
-    //     attack: Animation {
-    //         frames: attack_frames as usize,
-    //         frame_size,
-    //         texture_size: attack_texture_size,
-    //         texture_handle: attack_texture_handle.clone(),
-    //     },
-    // });
-
-    
+#[derive(Resource)]
+pub struct PlayerAnimations {
+    pub idle: Animation,
+    pub walk: Animation,
+    pub attack: Animation,
 }
 
 pub fn player_movement_state(
@@ -99,6 +51,40 @@ pub fn player_movement_state(
                     
                 }
             }
+        }
+    }
+}
+
+pub fn update_player_animation(
+    player_animations: Res<PlayerAnimations>,
+    mut query: Query<(
+        &mut Handle<Image>,
+        &mut SpriteAnimState,
+        &mut Sprite,
+        &PlayerState,
+    ), With<Player>>,
+) {
+    for (mut texture_handle, mut anim_state, mut sprite, state) in query.iter_mut() {
+        let animation = match *state {
+            PlayerState::Idle => &player_animations.idle,
+            PlayerState::Walking => &player_animations.walk,
+            PlayerState::Attacking => &player_animations.attack,
+            _ => continue,
+        };
+
+        if *texture_handle != animation.texture_handle {
+            *texture_handle = animation.texture_handle.clone();
+            anim_state.start_index = animation.frames;
+            anim_state.frame_size = animation.frame_size;
+            anim_state.texture_size = animation.texture_size;
+            anim_state.end_index = 0;
+            anim_state.timer = Timer::from_seconds(0.1, TimerMode::Repeating);
+
+            // Reset sprite rect
+            sprite.rect = Some(Rect {
+                min: Vec2::ZERO,
+                max: animation.frame_size.as_vec2(),
+            });
         }
     }
 }

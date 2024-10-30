@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use crate::GameState;
-use crate::engine::player_animation_state::PlayerInputState;
-use crate::engine::sprite_animation::SpriteAnimState;
-use crate::engine::player_animation_state::PlayerState;
+use crate::engine::player_animation_state::*;
+use crate::engine::sprite_animation::*;
+use crate::engine::player_input::*;
 
 pub struct AddPlayerPlugin;
 
@@ -21,9 +21,10 @@ struct PlayerBundle {
 impl Plugin for AddPlayerPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_systems(OnEnter(GameState::InGame),setup_player);
-        // .add_systems(Update, player_input)
-        // .add_systems(OnExit(GameState::InGame), despawn_player);
+        .add_event::<PlayerInputs>()
+        .add_systems(OnEnter(GameState::InGame),setup_player)
+        .add_systems(Update, (keyboard_input,player_movement_state,(animate_sprite,update_player_animation).chain()).run_if(in_state(GameState::InGame)))
+        .add_systems(OnExit(GameState::InGame), despawn_player);
     }
 }
 
@@ -44,11 +45,11 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
     let idle_layout = TextureAtlasLayout::from_grid(frame_size as UVec2, idle_frames as u32, 1, None, None);
     let idle_layout_handle = texture_atlases.add(idle_layout);
 
-    let walk_layout = TextureAtlasLayout::from_grid(frame_size, walk_frames as u32, 1, None, None);
-    let walk_layout_handle = texture_atlases.add(walk_layout);
+    //let walk_layout = TextureAtlasLayout::from_grid(frame_size, walk_frames as u32, 1, None, None);
+    //let walk_layout_handle = texture_atlases.add(walk_layout);
 
-    let attack_layout = TextureAtlasLayout::from_grid(frame_size, attack_frames as u32, 1, None, None);
-    let attack_layout_handle = texture_atlases.add(attack_layout);
+    //let attack_layout = TextureAtlasLayout::from_grid(frame_size, attack_frames as u32, 1, None, None);
+    //let attack_layout_handle = texture_atlases.add(attack_layout);
 
     // Define texture sizes (assuming horizontal sprite sheets)
     let idle_texture_size = Vec2::new(idle_frames as f32 * frame_size.x as f32, frame_size.y as f32);
@@ -57,6 +58,28 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
     
     // Define frame sizes
     let frame_size = UVec2::new(128, 128);
+
+    //Store animations in a resource
+    commands.insert_resource(PlayerAnimations {
+        idle: Animation {
+            frames: idle_frames as usize,
+            frame_size,
+            texture_size: idle_texture_size,
+            texture_handle: idle_texture_handle.clone(),
+        },
+        walk: Animation {
+            frames: walk_frames as usize,
+            frame_size,
+            texture_size: walk_texture_size,
+            texture_handle: walk_texture_handle.clone(),
+        },
+        attack: Animation {
+            frames: attack_frames as usize,
+            frame_size,
+            texture_size: attack_texture_size,
+            texture_handle: attack_texture_handle.clone(),
+        },
+    });
 
     commands.spawn(
         (PlayerBundle {
@@ -73,7 +96,7 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
             },
             anim_state: SpriteAnimState {
                 start_index: 0,
-                end_index: idle_frames,
+                end_index: idle_frames - 1,
                 frame_size,
                 texture_size: idle_texture_size,
                 timer: Timer::from_seconds(0.1,TimerMode::Repeating),
@@ -85,6 +108,14 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
         },
     )
     );
+
+    
+}
+
+fn despawn_player(mut commands: Commands, query: Query<Entity, With<SpriteAnimState>>) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
 }
 
 
