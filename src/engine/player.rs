@@ -14,7 +14,6 @@ struct PlayerBundle {
     sprite_sheet_bundle: SpriteBundle,
     player: Player,
     state: PlayerState,
-    input_state: PlayerInputState,
     anim_state: SpriteAnimState,
 }
 
@@ -90,11 +89,7 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
                 ..Default::default()
             },
             player: Player,
-            state: PlayerState::Idle,
-            input_state: PlayerInputState {
-                movement_velocity: Vec2::ZERO,
-                speed_multiplier: 64.0,
-            },
+            state: PlayerState(vec![PlayerStateKind::Idle]),
             anim_state: SpriteAnimState {
                 start_index: 0,
                 end_index: idle_frames - 1,

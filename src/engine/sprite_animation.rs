@@ -8,7 +8,7 @@ pub enum AnimationEventKind {
 #[derive(Event)]
 pub struct AnimationEvent {
     pub kind: AnimationEventKind,
-    entity: Entity,
+    pub entity: Entity,
 }
 
 #[derive(Component)]
