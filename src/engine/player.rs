@@ -3,7 +3,7 @@ use crate::GameState;
 use crate::engine::player_animation_state::*;
 use crate::engine::sprite_animation::*;
 use crate::engine::player_input::*;
-
+use crate::engine::physics::*;
 pub struct AddPlayerPlugin;
 
 #[derive(Component)]
@@ -15,6 +15,8 @@ struct PlayerBundle {
     player: Player,
     state: PlayerState,
     anim_state: SpriteAnimState,
+    texture: TextureAtlas,
+    physics: Physics,
 }
 
 impl Plugin for AddPlayerPlugin {
@@ -30,31 +32,25 @@ impl Plugin for AddPlayerPlugin {
 
 fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>) {
 
-    let idle_frames: usize = 6;
+    let idle_frames: usize = 13;
     let walk_frames: usize = 10;
-    let attack_frames: usize = 4;
+    let attack_frames: usize = 6;
+    let jump_frames: usize = 10;
+    let run_frames: usize = 10;
 
     // Define frame sizes
     let frame_size = UVec2::new(128, 128);
 
-    let idle_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_3/Idle.png");
-    let walk_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_3/Walk.png");
-    let attack_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_3/Attack.png");
+    let idle_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Idle_2.png");
+    let walk_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Walk.png");
+    let attack_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Attack_1.png");
+    let jump_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Jump.png");
+    let run_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Run.png");
 
     // Create TextureAtlasLayouts
     let idle_layout = TextureAtlasLayout::from_grid(frame_size as UVec2, idle_frames as u32, 1, None, None);
     let idle_layout_handle = texture_atlases.add(idle_layout);
 
-    //let walk_layout = TextureAtlasLayout::from_grid(frame_size, walk_frames as u32, 1, None, None);
-    //let walk_layout_handle = texture_atlases.add(walk_layout);
-
-    //let attack_layout = TextureAtlasLayout::from_grid(frame_size, attack_frames as u32, 1, None, None);
-    //let attack_layout_handle = texture_atlases.add(attack_layout);
-
-    // Define texture sizes (assuming horizontal sprite sheets)
-    let idle_texture_size = Vec2::new(idle_frames as f32 * frame_size.x as f32, frame_size.y as f32);
-    let walk_texture_size = Vec2::new(walk_frames as f32 * frame_size.x as f32, frame_size.y as f32);
-    let attack_texture_size = Vec2::new(attack_frames as f32 * frame_size.x as f32, frame_size.y as f32);
     
     // Define frame sizes
     let frame_size = UVec2::new(128, 128);
@@ -64,25 +60,32 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
         idle: Animation {
             frames: idle_frames as usize,
             frame_size,
-            texture_size: idle_texture_size,
             texture_handle: idle_texture_handle.clone(),
         },
         walk: Animation {
             frames: walk_frames as usize,
             frame_size,
-            texture_size: walk_texture_size,
             texture_handle: walk_texture_handle.clone(),
         },
         attack: Animation {
             frames: attack_frames as usize,
             frame_size,
-            texture_size: attack_texture_size,
             texture_handle: attack_texture_handle.clone(),
+        },
+        jump: Animation {
+            frames: jump_frames as usize,
+            frame_size,
+            texture_handle: jump_texture_handle.clone(),
+        },
+        run: Animation {
+            frames: run_frames as usize,
+            frame_size,
+            texture_handle: run_texture_handle.clone(),
         },
     });
 
     commands.spawn(
-        (PlayerBundle {
+        PlayerBundle {
             sprite_sheet_bundle : SpriteBundle {
                 texture: idle_texture_handle,
                 transform: Transform::from_xyz(0.0, 0.0, 0.0),
@@ -94,15 +97,17 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
                 start_index: 0,
                 end_index: idle_frames - 1,
                 frame_size,
-                texture_size: idle_texture_size,
-                timer: Timer::from_seconds(0.1,TimerMode::Repeating),
+                timer: Timer::from_seconds(1.0/12.0,TimerMode::Repeating),
+            },
+            texture: TextureAtlas {
+                layout: idle_layout_handle,
+                index: 0,
+            },
+            physics: Physics {
+                velocity: Vec3::ZERO,
+                acceleration: Vec3::ZERO,
             },
         },
-        TextureAtlas {
-            layout: idle_layout_handle,
-            index: 0,
-        },
-    )
     );
 
     

@@ -8,7 +8,7 @@ pub enum AnimationEventKind {
 #[derive(Event)]
 pub struct AnimationEvent {
     pub kind: AnimationEventKind,
-    pub entity: Entity,
+    pub _entity: Entity,
 }
 
 #[derive(Component)]
@@ -16,14 +16,12 @@ pub struct SpriteAnimState {
     pub start_index: usize,
     pub end_index: usize,
     pub frame_size: UVec2,
-    pub texture_size: Vec2,
     pub timer: Timer,
 }
 
 pub struct Animation {
     pub frames: usize,
     pub frame_size: UVec2,
-    pub texture_size: Vec2,
     pub texture_handle: Handle<Image>,
 }
 
@@ -33,15 +31,16 @@ pub fn animate_sprite(
     mut event_writer_anim: EventWriter<AnimationEvent>,
 )
 {
-    for (entity, mut atlas, mut anim_state) in query.iter_mut() {
+    for (_entity, mut atlas, mut anim_state) in query.iter_mut() {
         anim_state.timer.tick(time.delta());
         if anim_state.timer.finished() {
+            //println!("Current Index: {} End Index: {}", atlas.index, anim_state.end_index);
             atlas.index += 1;
             if atlas.index > anim_state.end_index {
                 atlas.index = anim_state.start_index;
                 event_writer_anim.send(AnimationEvent {
                     kind: AnimationEventKind::Finished,
-                    entity,
+                    _entity,
             });
         }
         }
