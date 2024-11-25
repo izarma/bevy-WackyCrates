@@ -4,8 +4,6 @@ use crate::engine::player::Player;
 use crate::engine::sprite_animation::*;
 use crate::engine::physics::*;
 
-use super::physics;
-
 
 #[derive(Component, Debug)]
 pub struct PlayerState(pub Vec<PlayerStateKind>);
@@ -24,8 +22,8 @@ pub enum PlayerStateKind {
     Run(Vec2),     // Movement vector with increased speed
     Jump(Vec2),    // Directional jump
     Attack,
-    Hurt,
-    Dead,
+    _Hurt,
+    _Dead,
 }
 
 #[derive(Resource)]
@@ -76,7 +74,7 @@ pub fn player_movement_state(
                     PlayerStateKind::Run(vel) | PlayerStateKind::Walk(vel) => vel,
                     _ => Vec2::ZERO,
                 };
-                let jump_velocity = Vec2::new(jump_direction.x, 128.0); // Upward jump velocity
+                let jump_velocity = Vec2::new(jump_direction.x, 64.0); // Upward jump velocity
                 state.0.push(PlayerStateKind::Jump(jump_velocity));
             }
             // Handle Attack State
@@ -94,6 +92,7 @@ pub fn player_movement_state(
                // Ensure Idle state is on top if no movement states remain
                if !state.0.iter().any(|s| matches!(s, PlayerStateKind::Walk(_) | PlayerStateKind::Run(_))) {
                    state.0.push(PlayerStateKind::Idle);
+                   physics.velocity = Vec3::ZERO;
                }
             }
             PlayerInputs::RunEnd => {
@@ -103,14 +102,16 @@ pub fn player_movement_state(
                         *top_state = PlayerStateKind::Walk(vel / 2.0);
                     }
                 }
-            }
+                physics.velocity = Vec3::ZERO;
+            } 
         }
+        println!("Player State: {:#?}", state.0);
         }
     }
     // Clean up states when finished event is triggered
     for event in player_anim_event_reader.read() {
         if let AnimationEventKind::Finished = event.kind {
-            for (mut state, mut physics) in q_player.iter_mut() {
+            for (mut state, _physics) in q_player.iter_mut() {
                     if let PlayerStateKind::Attack | PlayerStateKind::Jump(_) = state.current_state() {
                         // Pop the Attack state from the stack
                         state.0.pop();
@@ -121,6 +122,7 @@ pub fn player_movement_state(
             }
         }
     }
+    //println!("Player State: {:#?}", q_player);
 }
 pub fn update_player_animation(
     player_animations: Res<PlayerAnimations>,
@@ -160,19 +162,24 @@ pub fn update_player_animation(
 }
 
 pub fn player_sprite_movement(
-    time: Res<Time>,
+
     mut query_player: Query<(&mut Transform, &mut Physics, &PlayerState), With<Player>>,
 ) {
     for (mut xf, mut physics, state) in query_player.iter_mut() {
+ 
         match state.current_state() {
             PlayerStateKind::Walk(vel) | PlayerStateKind::Run(vel) | PlayerStateKind::Jump(vel) => {
-                physics.velocity = vel.extend(0.0); // Update physics velocity
+                // Update physics velocity
+                physics.velocity = vel.extend(0.0); 
                 // Flip the player's sprite based on the movement direction
                 if vel.x < 0.0 {
                     xf.scale.x = -1.0;
                 } else {
                     xf.scale.x = 1.0;
                 }
+            },
+            PlayerStateKind::Attack => {
+                physics.velocity = Vec3::ZERO;
             },
             _ => {
             },

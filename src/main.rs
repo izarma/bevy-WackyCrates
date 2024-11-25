@@ -11,7 +11,7 @@ enum GameState {
     MainMenu,
     Settings,
     InGame,
-    GameOver,
+    _GameOver,
 }
  
 fn main() {

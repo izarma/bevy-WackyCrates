@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub enum AnimationEventKind {
     Finished,
-    Charging,
+    _Charging,
 }
 
 #[derive(Event)]
