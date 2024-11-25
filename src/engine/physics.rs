@@ -18,7 +18,7 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_systems(OnEnter(GameState::InGame),spawn_ground)
-        .add_systems(Update, (gravity_system,collision_system).run_if(in_state(GameState::InGame)));
+        .add_systems(Update, (gravity_system,collision_system).chain().run_if(in_state(GameState::InGame)));
     }
 }
 
@@ -46,6 +46,7 @@ pub fn collision_system(
         if transform.translation.y <= ground.level {
             transform.translation.y = ground.level;
             physics.velocity.y = 0.0;
+            physics.acceleration.y = 0.0;
         }
         println!("Ground {:?}, Physics {:?}, transform {:?}", ground, physics , transform);
     }
