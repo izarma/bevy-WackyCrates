@@ -19,7 +19,7 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_systems(OnEnter(GameState::InGame),spawn_ground)
-        .add_systems(Update, (gravity_system,collision_system).run_if(in_state(GameState::InGame)));
+        .add_systems(Update, (gravity_system,collision_system).chain().run_if(in_state(GameState::InGame)));
     }
 }
 
