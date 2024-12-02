@@ -1,10 +1,11 @@
-use bevy:: prelude::*;
+use bevy::{ecs::query,  prelude::*};
 use crate:: GameState;
 
 #[derive(Component, Debug)]
 pub struct Physics {
     pub velocity: Vec3,
     pub acceleration: Vec3,
+    pub on_ground: bool
 }
 
 pub struct PhysicsPlugin;
@@ -22,11 +23,13 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-
-
 pub fn gravity_system(mut query: Query<(&mut Physics, &mut Transform)>, time: Res<Time>) {
     for (mut physics, mut transform) in query.iter_mut() {
-        physics.acceleration.y = -98.1*5.0; //apply gravity
+        if !physics.on_ground {
+            physics.acceleration.y = -981.0; // Apply gravity
+        } else {
+            physics.acceleration.y = 0.0; // No gravity when on the ground
+        }
         // Store the computed velocity in a temporary variable to avoid mutable/immutable conflict
         let new_velocity = physics.velocity + physics.acceleration * time.delta_seconds();
         physics.velocity = new_velocity;
@@ -43,11 +46,14 @@ pub fn collision_system(
 ) {
     let ground = ground_query.single();  // Ensure only one ground
     for (mut physics, mut transform) in query.iter_mut() {
-        if transform.translation.y <= ground.level {
+        if transform.translation.y <= ground.level && physics.velocity.y <= 0.0 {
             transform.translation.y = ground.level;
             physics.velocity.y = 0.0;
+            physics.on_ground = true; // Set to true when on the ground
+        } else {
+            physics.on_ground = false; // Set to false when in the air
         }
-        println!("Ground {:?}, Physics {:?}, transform {:?}", ground, physics , transform);
+        //println!("Ground {:?}, Physics {:?}, transform {:?}", ground, physics , transform);
     }
     
 }

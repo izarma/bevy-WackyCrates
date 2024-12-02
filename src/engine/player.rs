@@ -106,6 +106,7 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
             physics: Physics {
                 velocity: Vec3::ZERO,
                 acceleration: Vec3::ZERO,
+                on_ground: false
             },
         },
     );
