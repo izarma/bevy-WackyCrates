@@ -1,5 +1,6 @@
-use bevy::{ecs::query,  prelude::*};
+use bevy::prelude::*;
 use crate:: GameState;
+use crate::engine::player::*;
 
 #[derive(Component, Debug)]
 pub struct Physics {
@@ -41,13 +42,16 @@ pub fn gravity_system(mut query: Query<(&mut Physics, &mut Transform)>, time: Re
 }
 
 pub fn collision_system(
-    mut query: Query<(&mut Physics, &mut Transform), Without<Ground>>,
+    mut query: Query<(&mut Physics, &mut Transform, &SpriteSize), Without<Ground>>,
     ground_query: Query<&Ground>,
 ) {
     let ground = ground_query.single();  // Ensure only one ground
-    for (mut physics, mut transform) in query.iter_mut() {
-        if transform.translation.y <= ground.level && physics.velocity.y <= 0.0 {
-            transform.translation.y = ground.level;
+    
+    for (mut physics, mut transform, sprite_size) in query.iter_mut() {
+        let ground_level = ground.level + 0.5 * sprite_size.frame_size.y; // Adjust ground level based on player size
+    
+        if transform.translation.y <= ground_level && physics.velocity.y <= 0.0 {
+            transform.translation.y = ground_level;
             physics.velocity.y = 0.0;
             physics.on_ground = true; // Set to true when on the ground
         } else {
@@ -70,5 +74,5 @@ pub fn spawn_ground(mut commands: Commands) {
             transform: Transform::from_xyz(0.0, -200.0, 0.0),
             ..default()
         })
-        .insert(Ground { level: -125.0 });  // Set ground level
+        .insert(Ground { level: -190.0 });  // Set ground level
 }

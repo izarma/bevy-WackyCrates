@@ -9,6 +9,11 @@ pub struct AddPlayerPlugin;
 #[derive(Component)]
 pub struct Player;
 
+#[derive(Component)]
+pub struct SpriteSize{
+    pub frame_size: Vec2,
+}
+
 #[derive(Bundle)]
 struct PlayerBundle {
     sprite_sheet_bundle: SpriteBundle,
@@ -17,6 +22,7 @@ struct PlayerBundle {
     anim_state: SpriteAnimState,
     texture: TextureAtlas,
     physics: Physics,
+    frame_size: SpriteSize,
 }
 
 impl Plugin for AddPlayerPlugin {
@@ -108,6 +114,8 @@ fn setup_player (mut commands: Commands, asset_server: Res<AssetServer>, mut tex
                 acceleration: Vec3::ZERO,
                 on_ground: false
             },
+            frame_size: SpriteSize{
+                frame_size:frame_size.as_vec2()},
         },
     );
 
