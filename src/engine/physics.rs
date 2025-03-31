@@ -1,26 +1,40 @@
-use bevy::prelude::*;
-use crate:: GameState;
 use crate::engine::player::*;
+use crate::GameState;
+use bevy::prelude::*;
 
 #[derive(Component, Debug)]
 pub struct Physics {
     pub velocity: Vec3,
     pub acceleration: Vec3,
-    pub on_ground: bool
+    pub on_ground: bool,
+}
+
+impl Default for Physics {
+    fn default() -> Self {
+        Self {
+            velocity: Vec3::ZERO,
+            acceleration: Vec3::ZERO,
+            on_ground: false,
+        }
+    }
 }
 
 pub struct PhysicsPlugin;
 
 #[derive(Component, Debug)]
-pub struct Ground{
-    pub level: f32,  // Represents the Y-level of the ground
+pub struct Ground {
+    pub level: f32, // Represents the Y-level of the ground
 }
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(OnEnter(GameState::InGame),spawn_ground)
-        .add_systems(Update, (gravity_system,collision_system).chain().run_if(in_state(GameState::InGame)));
+        app.add_systems(OnEnter(GameState::InGame), spawn_ground)
+            .add_systems(
+                Update,
+                (gravity_system, collision_system)
+                    .chain()
+                    .run_if(in_state(GameState::InGame)),
+            );
     }
 }
 
@@ -32,11 +46,11 @@ pub fn gravity_system(mut query: Query<(&mut Physics, &mut Transform)>, time: Re
             physics.acceleration.y = 0.0; // No gravity when on the ground
         }
         // Store the computed velocity in a temporary variable to avoid mutable/immutable conflict
-        let new_velocity = physics.velocity + physics.acceleration * time.delta_seconds();
+        let new_velocity = physics.velocity + physics.acceleration * time.delta_secs();
         physics.velocity = new_velocity;
 
         // Update the translation with the new velocity
-        transform.translation += physics.velocity * time.delta_seconds();
+        transform.translation += physics.velocity * time.delta_secs();
         //println!("Physics {:?}", physics);
     }
 }
@@ -45,11 +59,11 @@ pub fn collision_system(
     mut query: Query<(&mut Physics, &mut Transform, &SpriteSize), Without<Ground>>,
     ground_query: Query<&Ground>,
 ) {
-    let ground = ground_query.single();  // Ensure only one ground
-    
+    let ground = ground_query.single(); // Ensure only one ground
+
     for (mut physics, mut transform, sprite_size) in query.iter_mut() {
         let ground_level = ground.level + 0.5 * sprite_size.frame_size.y; // Adjust ground level based on player size
-    
+
         if transform.translation.y <= ground_level && physics.velocity.y <= 0.0 {
             transform.translation.y = ground_level;
             physics.velocity.y = 0.0;
@@ -59,20 +73,17 @@ pub fn collision_system(
         }
         //println!("Ground {:?}, Physics {:?}, transform {:?}", ground, physics , transform);
     }
-    
 }
-
 
 pub fn spawn_ground(mut commands: Commands) {
     commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
+        .spawn((
+            Sprite {
                 color: Color::WHITE,
                 custom_size: Some(Vec2::new(4000.0, 20.0)), // Adjust width to fit screen
                 ..default()
             },
-            transform: Transform::from_xyz(0.0, -200.0, 0.0),
-            ..default()
-        })
-        .insert(Ground { level: -190.0 });  // Set ground level
+            Transform::from_xyz(0.0, -200.0, 0.0),
+        ))
+        .insert(Ground { level: -190.0 }); // Set ground level
 }

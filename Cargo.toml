@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.2", features = [ "dynamic_linking" ] }
-leafwing-input-manager = "0.15.1"
-rand = "0.8.5"
+bevy = "0.15.3"
+leafwing-input-manager = "0.16.0"
+rand = "0.9.0"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]

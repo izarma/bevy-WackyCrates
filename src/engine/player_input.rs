@@ -19,7 +19,6 @@ pub fn keyboard_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_move_event: EventWriter<PlayerInputs>,
 ) {
-
     // handle key presses
     if keyboard_input.just_pressed(KeyCode::ArrowLeft) {
         player_move_event.send(PlayerInputs::Walk(MoveDirection::Left));

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use game_ui::ui_plugin::UiPlugin;
 
-mod game_ui;
 mod consts;
 mod engine;
+mod game_ui;
 
 #[derive(Debug, Eq, PartialEq, Hash, Resource, States, Default, Clone)]
 enum GameState {
@@ -13,7 +13,7 @@ enum GameState {
     InGame,
     _GameOver,
 }
- 
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
