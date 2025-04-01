@@ -16,41 +16,36 @@ pub fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let title_img = asset_server.load("WACKY_3.png");
     commands.spawn(Camera2d);
     commands
-        .spawn(Node {
-            width: Val::Percent(100.0),
-            position_type: PositionType::Relative,
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::FlexStart,
-            ..default()
-        })
+        .spawn((
+            Node {
+                align_content: AlignContent::Center,
+                align_self: AlignSelf::Center,
+                justify_self: JustifySelf::Center,
+                position_type: PositionType::Relative,
+                flex_wrap: FlexWrap::NoWrap,
+                flex_direction: FlexDirection::Column, // Stack items vertically
+                justify_content: JustifyContent::FlexStart, // Align from top
+                align_items: AlignItems::Center,
+                // Add spacing between items
+                row_gap: Val::Px(10.0),
+                ..Default::default()
+            },
+            OnMainMenuScreen,
+        ))
         .with_children(|parent| {
+            // Title Image
             parent.spawn((
                 ImageNode {
                     image: title_img,
                     ..default()
                 },
                 Node {
-                    width: Val::Px(500.0),
-                    height: Val::Px(500.0),
+                    width: Val::Px(400.0),
+                    height: Val::Px(400.0),
                     margin: UiRect::top(Val::VMin(5.)),
                     ..default()
                 },
-                OnMainMenuScreen,
             ));
-        });
-    commands
-        .spawn((
-            Node {
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                align_self: AlignSelf::Center,
-                justify_self: JustifySelf::Center,
-                position_type: PositionType::Relative,
-                ..Default::default()
-            },
-            OnMainMenuScreen,
-        ))
-        .with_children(|parent| {
             // Start Game Button
             parent
                 .spawn((
@@ -128,7 +123,7 @@ pub fn button_interaction_system(
                 match button {
                     MenuButtons::Play => {
                         println!("Play Game Button Clicked"); // Switch to Lobby state
-                        game_state.set(GameState::InGame);
+                        game_state.set(GameState::AssetLoading);
                     }
                     MenuButtons::Settings => {
                         println!("Settings Button Clicked"); // Switch to Lobby state

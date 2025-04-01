@@ -10,6 +10,7 @@ mod game_ui;
 enum GameState {
     #[default]
     MainMenu,
+    AssetLoading,
     Settings,
     InGame,
     _GameOver,

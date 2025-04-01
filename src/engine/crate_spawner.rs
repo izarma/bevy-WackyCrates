@@ -1,4 +1,4 @@
-use crate::engine::physics::*;
+use crate::animations::asset_loader::ImageAssets;
 use crate::engine::player::*;
 use crate::GameState;
 use avian2d::prelude::Collider;
@@ -29,12 +29,11 @@ impl Plugin for SpawnCratesPlugin {
 
 fn spawn_crate(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    image_assets: Res<ImageAssets>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut timer: ResMut<SelectionTimer>,
     time: Res<Time>,
 ) {
-    let texture_handle = asset_server.load("sprites/RTS_Crate.png");
     let window: &Window = window_query.get_single().unwrap();
     let window_width = window.width();
     let random_x = rand::random_range(-window_width / 2.0..window_width / 2.0);
@@ -43,7 +42,7 @@ fn spawn_crate(
         commands.spawn((
             WackyCrate,
             Sprite {
-                image: texture_handle,
+                image: image_assets.wacky_crate.clone(),
                 ..Default::default()
             },
             Transform::from_xyz(random_x, window.height() + 100.0, 0.0)

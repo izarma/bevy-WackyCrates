@@ -1,7 +1,6 @@
-use crate::animations::player_animations::*;
 use crate::animations::sprite_animation::*;
 use crate::engine::physics::*;
-use crate::engine::player::Player;
+use crate::engine::player::*;
 use crate::engine::player_input::*;
 use bevy::prelude::*;
 
@@ -15,6 +14,13 @@ impl PlayerState {
     pub fn push_state(&mut self, new_state: PlayerStateKind) {
         // Add new state
         self.0.push(new_state);
+    }
+
+    pub fn can_attack(&self) -> bool {
+        matches!(
+            self.current_state(),
+            PlayerStateKind::Idle | PlayerStateKind::Walk(_) | PlayerStateKind::Run(_)
+        )
     }
 }
 
@@ -31,8 +37,8 @@ pub enum PlayerStateKind {
     Run(Vec2),  // Movement vector with increased speed
     Jump(Vec2), // Directional jump
     Attack,
-    _Hurt,
-    _Dead,
+    Hurt,
+    Dead,
 }
 
 /// Handle player movement state based on user input events and animation finished events.
@@ -140,36 +146,35 @@ pub fn player_movement_state(
     }
     //println!("Player State: {:#?}", q_player);
 }
-pub fn update_player_animation(
-    player_animations: Res<PlayerAnimations>,
-    mut query: Query<(&mut SpriteAnimState, &mut Sprite, &PlayerState), Changed<PlayerState>>,
+
+// Attack combo system
+pub fn handle_attack_combo(
+    mut query: Query<(&mut PlayerStatus, &PlayerState)>,
+    mut input_events: EventReader<PlayerInputs>,
+    mut anim_events: EventReader<AnimationEvent>,
 ) {
-    for (mut anim_state, mut sprite, state) in query.iter_mut() {
-        let animation = match state.current_state() {
-            PlayerStateKind::Idle => &player_animations.idle,
-            PlayerStateKind::Walk(_) => &player_animations.walk,
-            PlayerStateKind::Attack => &player_animations.attack,
-            PlayerStateKind::Run(_) => &player_animations.run,
-            PlayerStateKind::Jump(_) => &player_animations.jump,
-            _ => continue,
-        };
-
-        if sprite.image != animation.texture_handle {
-            sprite.image = animation.texture_handle.clone();
-            anim_state.start_index = 0;
-            anim_state.frame_size = animation.frame_size;
-            anim_state.end_index = animation.frames;
-            anim_state.timer = Timer::from_seconds(1.0 / 12.0, TimerMode::Repeating);
-            // Reset texture atlas
-            if let Some(texture_atlas) = &mut sprite.texture_atlas {
-                texture_atlas.index = 0;
+    // Handle attack inputs
+    for event in input_events.read() {
+        if let PlayerInputs::Attack = event {
+            for (mut status, state) in &mut query {
+                // Only allow attacking if in a valid state
+                if state.can_attack() {
+                    status.attack_combo = (status.attack_combo + 1) % 3;
+                    println!("Attack Combo: {}", status.attack_combo);
+                }
             }
+        }
+    }
 
-            // Reset sprite rect
-            sprite.rect = Some(Rect {
-                min: Vec2::ZERO,
-                max: animation.frame_size.as_vec2(),
-            });
+    // Handle animation completions
+    for event in anim_events.read() {
+        if let AnimationEventKind::Finished = event.kind {
+            if let Ok((mut status, state)) = query.get_mut(event.entity) {
+                // Reset combo when attack animation finishes
+                if matches!(state.current_state(), PlayerStateKind::Attack) {
+                    status.attack_combo = 0;
+                }
+            }
         }
     }
 }

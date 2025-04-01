@@ -1,3 +1,5 @@
+use crate::animations::asset_loader::ImageAssets;
+use crate::animations::player_animation_clips::*;
 use crate::animations::player_animation_state::*;
 use crate::animations::player_animations::*;
 use crate::animations::sprite_animation::*;
@@ -24,17 +26,39 @@ impl Default for SpriteSize {
     }
 }
 
+#[derive(Component)]
+pub struct PlayerStatus {
+    pub hp: u32,
+    pub points: u32,
+    pub attack_combo: u8,
+    pub idle_timer: Timer,
+}
+
+impl Default for PlayerStatus {
+    fn default() -> Self {
+        Self {
+            hp: 100,
+            points: 0,
+            attack_combo: 0,
+            idle_timer: Timer::from_seconds(2.0, TimerMode::Once),
+        }
+    }
+}
+
 impl Plugin for AddPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<PlayerInputs>()
             .add_event::<AnimationEvent>()
-            .add_systems(OnEnter(GameState::InGame), setup_player)
+            .add_systems(
+                OnEnter(GameState::InGame),
+                (setup_animation_clips, setup_player).chain(),
+            )
             .add_systems(
                 Update,
                 (
                     keyboard_input,
                     player_movement_state,
-                    (animate_sprite, update_player_animation).chain(),
+                    (animate_sprite, update_player_animation, handle_attack_combo).chain(),
                     player_sprite_movement,
                 )
                     .run_if(in_state(GameState::InGame)),
@@ -45,67 +69,27 @@ impl Plugin for AddPlayerPlugin {
 
 fn setup_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    image_assets: Res<ImageAssets>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let idle_frames: usize = 13;
-    let walk_frames: usize = 10;
-    let attack_frames: usize = 6;
-    let jump_frames: usize = 10;
-    let run_frames: usize = 10;
-
     // Define frame sizes
     let frame_size = UVec2::new(128, 128);
-
-    let idle_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Idle_2.png");
-    let walk_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Walk.png");
-    let attack_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Attack_1.png");
-    let jump_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Jump.png");
-    let run_texture_handle: Handle<Image> = asset_server.load("sprites/City_men_2/Run.png");
 
     // Create TextureAtlasLayouts
-    let idle_layout =
-        TextureAtlasLayout::from_grid(frame_size as UVec2, idle_frames as u32, 1, None, None);
-    let idle_layout_handle = texture_atlases.add(idle_layout);
-
-    // Define frame sizes
-    let frame_size = UVec2::new(128, 128);
-
-    //Store animations in a resource
-    commands.insert_resource(PlayerAnimations {
-        idle: Animation {
-            frames: idle_frames as usize,
-            frame_size,
-            texture_handle: idle_texture_handle.clone(),
-        },
-        walk: Animation {
-            frames: walk_frames as usize,
-            frame_size,
-            texture_handle: walk_texture_handle.clone(),
-        },
-        attack: Animation {
-            frames: attack_frames as usize,
-            frame_size,
-            texture_handle: attack_texture_handle.clone(),
-        },
-        jump: Animation {
-            frames: jump_frames as usize,
-            frame_size,
-            texture_handle: jump_texture_handle.clone(),
-        },
-        run: Animation {
-            frames: run_frames as usize,
-            frame_size,
-            texture_handle: run_texture_handle.clone(),
-        },
-    });
+    let player_layout_handle = texture_atlases.add(TextureAtlasLayout::from_grid(
+        frame_size as UVec2,
+        75 as u32,
+        1,
+        None,
+        None,
+    ));
 
     commands.spawn((
         Player,
         Sprite {
-            image: idle_texture_handle,
+            image: image_assets.player.clone(),
             texture_atlas: Some(TextureAtlas {
-                layout: idle_layout_handle,
+                layout: player_layout_handle,
                 index: 0,
             }),
             ..Default::default()
@@ -114,6 +98,7 @@ fn setup_player(
         SpriteAnimState::default(),
         Physics::default(),
         SpriteSize::default(),
+        PlayerStatus::default(),
         Transform::from_xyz(0.0, 0.0, 0.0),
     ));
 }

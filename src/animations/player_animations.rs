@@ -1,17 +1,7 @@
 use crate::animations::player_animation_state::*;
-use crate::animations::sprite_animation::*;
 use crate::engine::physics::*;
 use crate::engine::player::Player;
 use bevy::prelude::*;
-
-#[derive(Resource)]
-pub struct PlayerAnimations {
-    pub idle: Animation,
-    pub walk: Animation,
-    pub attack: Animation,
-    pub jump: Animation,
-    pub run: Animation,
-}
 
 pub fn player_sprite_movement(
     mut query_player: Query<(&mut Transform, &mut Physics, &PlayerState), With<Player>>,
