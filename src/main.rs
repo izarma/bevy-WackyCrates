@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use game_ui::ui_plugin::UiPlugin;
 
+mod animations;
 mod consts;
 mod engine;
 mod game_ui;

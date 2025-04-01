@@ -1,7 +1,8 @@
+use crate::animations::player_animations::*;
+use crate::animations::sprite_animation::*;
 use crate::engine::physics::*;
 use crate::engine::player::Player;
 use crate::engine::player_input::*;
-use crate::engine::sprite_animation::*;
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
@@ -32,15 +33,6 @@ pub enum PlayerStateKind {
     Attack,
     _Hurt,
     _Dead,
-}
-
-#[derive(Resource)]
-pub struct PlayerAnimations {
-    pub idle: Animation,
-    pub walk: Animation,
-    pub attack: Animation,
-    pub jump: Animation,
-    pub run: Animation,
 }
 
 /// Handle player movement state based on user input events and animation finished events.
@@ -178,32 +170,6 @@ pub fn update_player_animation(
                 min: Vec2::ZERO,
                 max: animation.frame_size.as_vec2(),
             });
-        }
-    }
-}
-
-pub fn player_sprite_movement(
-    mut query_player: Query<(&mut Transform, &mut Physics, &PlayerState), With<Player>>,
-) {
-    for (mut xf, mut physics, state) in query_player.iter_mut() {
-        match state.current_state() {
-            PlayerStateKind::Walk(vel) | PlayerStateKind::Run(vel) => {
-                // Update physics velocity
-                physics.velocity.x = vel.x;
-                // Flip the player's sprite based on the movement direction
-                if vel.x < 0.0 {
-                    xf.scale.x = -1.0;
-                } else {
-                    xf.scale.x = 1.0;
-                }
-            }
-            PlayerStateKind::Jump(vel) => {
-                physics.velocity.y = vel.y;
-            }
-            PlayerStateKind::Attack => {
-                physics.velocity = Vec3::ZERO;
-            }
-            _ => {}
         }
     }
 }
