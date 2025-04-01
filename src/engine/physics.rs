@@ -1,5 +1,6 @@
 use crate::engine::player::*;
 use crate::GameState;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
@@ -84,6 +85,8 @@ pub fn spawn_ground(mut commands: Commands) {
                 ..default()
             },
             Transform::from_xyz(0.0, -200.0, 0.0),
+            RigidBody::Static,
+            Collider::rectangle(4000.0, 20.0),
         ))
         .insert(Ground { level: -190.0 }); // Set ground level
 }
