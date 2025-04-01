@@ -12,7 +12,32 @@ pub enum MenuButtons {
 pub struct OnMainMenuScreen;
 
 pub fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let menu_font = asset_server.load("fonts/Glowdex.ttf");
+    let title_img = asset_server.load("WACKY_3.png");
     commands.spawn(Camera2d);
+    commands
+        .spawn(Node {
+            width: Val::Percent(100.0),
+            position_type: PositionType::Relative,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::FlexStart,
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((
+                ImageNode {
+                    image: title_img,
+                    ..default()
+                },
+                Node {
+                    width: Val::Px(500.0),
+                    height: Val::Px(500.0),
+                    margin: UiRect::top(Val::VMin(5.)),
+                    ..default()
+                },
+                OnMainMenuScreen,
+            ));
+        });
     commands
         .spawn((
             Node {
@@ -20,6 +45,7 @@ pub fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 align_items: AlignItems::Center,
                 align_self: AlignSelf::Center,
                 justify_self: JustifySelf::Center,
+                position_type: PositionType::Relative,
                 ..Default::default()
             },
             OnMainMenuScreen,
@@ -27,17 +53,63 @@ pub fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|parent| {
             // Start Game Button
             parent
-                .spawn((Button))
+                .spawn((
+                    Button,
+                    Node {
+                        width: Val::Px(250.0),
+                        height: Val::Px(65.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        // horizontally center child text
+                        justify_content: JustifyContent::Center,
+                        // vertically center child text
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    BorderColor(consts::BUTTON_BORDER),
+                    BorderRadius::MAX,
+                    BackgroundColor(consts::NORMAL_BUTTON),
+                ))
                 .insert(MenuButtons::Play)
                 .with_children(|parent: &mut ChildBuilder<'_>| {
-                    parent.spawn(Text::from("Play Game"));
+                    parent.spawn((
+                        Text::from("Play Game"),
+                        TextFont {
+                            font: menu_font.clone(),
+                            font_size: 30.0,
+                            ..default()
+                        },
+                        TextColor(consts::TEXT_COLOR),
+                    ));
                 });
             // Game Settings Button
             parent
-                .spawn(Button)
+                .spawn((
+                    Button,
+                    Node {
+                        width: Val::Px(250.0),
+                        height: Val::Px(65.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        // horizontally center child text
+                        justify_content: JustifyContent::Center,
+                        // vertically center child text
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    BorderColor(consts::BUTTON_BORDER),
+                    BorderRadius::MAX,
+                    BackgroundColor(consts::NORMAL_BUTTON),
+                ))
                 .insert(MenuButtons::Settings)
                 .with_children(|parent| {
-                    parent.spawn(Text::from("Settings"));
+                    parent.spawn((
+                        Text::from("Settings"),
+                        TextFont {
+                            font: menu_font,
+                            font_size: 30.0,
+                            ..default()
+                        },
+                        TextColor(consts::TEXT_COLOR),
+                    ));
                 });
         });
 }
