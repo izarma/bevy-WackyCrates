@@ -3,9 +3,11 @@ use crate::animations::player_animation_clips::*;
 use crate::animations::player_animation_state::*;
 use crate::animations::player_animations::*;
 use crate::animations::sprite_animation::*;
-use crate::engine::physics::*;
 use crate::engine::player_input::*;
+use crate::engine::player_physics::*;
 use crate::GameState;
+use avian2d::prelude::Collider;
+use avian2d::prelude::RigidBody;
 use bevy::prelude::*;
 pub struct AddPlayerPlugin;
 
@@ -99,6 +101,8 @@ fn setup_player(
         Physics::default(),
         SpriteSize::default(),
         PlayerStatus::default(),
+        RigidBody::Kinematic,
+        Collider::ellipse(10.0, 20.0),
         Transform::from_xyz(0.0, 0.0, 0.0),
     ));
 }

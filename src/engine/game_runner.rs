@@ -1,6 +1,6 @@
-use super::crate_spawner::SpawnCratesPlugin;
-use super::physics::PhysicsPlugin;
+use super::env_spawner::SpawnEnvironmentsPlugin;
 use super::player::AddPlayerPlugin;
+use super::player_physics::*;
 use crate::animations::asset_loader::*;
 use crate::GameState;
 use avian2d::prelude::*;
@@ -13,8 +13,8 @@ impl Plugin for GameRunnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             AddPlayerPlugin,
-            PhysicsPlugin,
-            SpawnCratesPlugin,
+            PlayerPhysicsPlugin,
+            SpawnEnvironmentsPlugin,
             PhysicsPlugins::default().with_length_unit(0.00001),
         ))
         .add_loading_state(

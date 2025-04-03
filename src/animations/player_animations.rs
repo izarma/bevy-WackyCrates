@@ -1,6 +1,6 @@
 use crate::animations::player_animation_state::*;
-use crate::engine::physics::*;
 use crate::engine::player::Player;
+use crate::engine::player_physics::*;
 use bevy::prelude::*;
 
 pub fn player_sprite_movement(

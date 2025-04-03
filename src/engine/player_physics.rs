@@ -1,6 +1,6 @@
 use crate::engine::player::*;
 use crate::GameState;
-use avian2d::prelude::*;
+use super::env_spawner::*;
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
@@ -20,22 +20,17 @@ impl Default for Physics {
     }
 }
 
-pub struct PhysicsPlugin;
+pub struct PlayerPhysicsPlugin;
 
-#[derive(Component, Debug)]
-pub struct Ground {
-    pub level: f32, // Represents the Y-level of the ground
-}
 
-impl Plugin for PhysicsPlugin {
+impl Plugin for PlayerPhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::InGame), spawn_ground)
-            .add_systems(
-                Update,
-                (gravity_system, collision_system)
-                    .chain()
-                    .run_if(in_state(GameState::InGame)),
-            );
+        app.add_systems(
+            Update,
+            (gravity_system, collision_system)
+                .chain()
+                .run_if(in_state(GameState::InGame)),
+        );
     }
 }
 
@@ -74,19 +69,4 @@ pub fn collision_system(
         }
         //println!("Ground {:?}, Physics {:?}, transform {:?}", ground, physics , transform);
     }
-}
-
-pub fn spawn_ground(mut commands: Commands) {
-    commands
-        .spawn((
-            Sprite {
-                color: Color::WHITE,
-                custom_size: Some(Vec2::new(4000.0, 20.0)), // Adjust width to fit screen
-                ..default()
-            },
-            Transform::from_xyz(0.0, -200.0, 0.0),
-            RigidBody::Static,
-            Collider::rectangle(4000.0, 20.0),
-        ))
-        .insert(Ground { level: -190.0 }); // Set ground level
 }

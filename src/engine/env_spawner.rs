@@ -14,15 +14,21 @@ pub struct WackyCrate;
 #[derive(Resource)]
 pub struct SelectionTimer(pub Timer);
 
-pub struct SpawnCratesPlugin;
+#[derive(Component, Debug)]
+pub struct Ground {
+    pub level: f32, // Represents the Y-level of the ground
+}
 
-impl Plugin for SpawnCratesPlugin {
+pub struct SpawnEnvironmentsPlugin;
+
+impl Plugin for SpawnEnvironmentsPlugin {
     fn build(&self, app: &mut App) {
         let random_time = Duration::from_millis(rand::random_range(500..3000) as u64);
         app.insert_resource(SelectionTimer(Timer::from_seconds(
             random_time.as_secs_f32(),
             TimerMode::Repeating,
         )))
+        .add_systems(OnEnter(GameState::InGame), spawn_ground)
         .add_systems(Update, spawn_crate.run_if(in_state(GameState::InGame)));
     }
 }
@@ -52,4 +58,19 @@ fn spawn_crate(
             Collider::rectangle(512.0, 512.0),
         ));
     }
+}
+
+pub fn spawn_ground(mut commands: Commands) {
+    commands
+        .spawn((
+            Sprite {
+                color: Color::WHITE,
+                custom_size: Some(Vec2::new(4000.0, 20.0)), // Adjust width to fit screen
+                ..default()
+            },
+            Transform::from_xyz(0.0, -200.0, 0.0),
+            RigidBody::Static,
+            Collider::rectangle(4000.0, 20.0),
+        ))
+        .insert(Ground { level: -190.0 }); // Set ground level
 }

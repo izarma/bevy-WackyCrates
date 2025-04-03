@@ -1,7 +1,7 @@
 use crate::animations::sprite_animation::*;
-use crate::engine::physics::*;
 use crate::engine::player::*;
 use crate::engine::player_input::*;
+use crate::engine::player_physics::*;
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
