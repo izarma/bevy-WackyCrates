@@ -3,6 +3,7 @@ use crate::engine::player::*;
 use crate::GameState;
 use avian2d::prelude::Collider;
 use avian2d::prelude::RigidBody;
+use avian2d::prelude::ColliderDensity;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use std::time::Duration;
@@ -56,6 +57,7 @@ fn spawn_crate(
             SpriteSize { frame_size },
             RigidBody::Dynamic,
             Collider::rectangle(512.0, 512.0),
+            ColliderDensity(10.0),
         ));
     }
 }

@@ -22,6 +22,6 @@ impl Plugin for GameRunnerPlugin {
                 .load_collection::<ImageAssets>()
                 .continue_to_state(GameState::InGame),
         )
-        .insert_resource(Gravity::default());
+        .insert_resource(Gravity(bevy::prelude::Vec2::new(0.0, -327.0)));
     }
 }
