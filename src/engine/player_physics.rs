@@ -1,6 +1,7 @@
 use crate::engine::player::*;
+use crate::environment::platform_spawner::*;
 use crate::GameState;
-use super::env_spawner::*;
+
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
@@ -21,7 +22,6 @@ impl Default for Physics {
 }
 
 pub struct PlayerPhysicsPlugin;
-
 
 impl Plugin for PlayerPhysicsPlugin {
     fn build(&self, app: &mut App) {
@@ -52,13 +52,13 @@ pub fn gravity_system(mut query: Query<(&mut Physics, &mut Transform)>, time: Re
 }
 
 pub fn collision_system(
-    mut query: Query<(&mut Physics, &mut Transform, &SpriteSize), Without<Ground>>,
-    ground_query: Query<&Ground>,
+    mut query: Query<(&mut Physics, &mut Transform, &SpriteSize), Without<Platform>>,
+    ground_query: Query<&Platform>,
 ) {
-    let ground = ground_query.single(); // Ensure only one ground
+    let applicable_level = ground_query.iter().map(|p| p.level as isize).max().unwrap();
 
     for (mut physics, mut transform, sprite_size) in query.iter_mut() {
-        let ground_level = ground.level + 0.5 * sprite_size.frame_size.y; // Adjust ground level based on player size
+        let ground_level = applicable_level as f32 + 0.5 * sprite_size.frame_size.y; // Adjust ground level based on player size
 
         if transform.translation.y <= ground_level && physics.velocity.y <= 0.0 {
             transform.translation.y = ground_level;
@@ -67,6 +67,6 @@ pub fn collision_system(
         } else {
             physics.on_ground = false; // Set to false when in the air
         }
-        //println!("Ground {:?}, Physics {:?}, transform {:?}", ground, physics , transform);
+        //println!("Ground {:?}, Physics {:?}, transform {:?}", Platform, physics , transform);
     }
 }

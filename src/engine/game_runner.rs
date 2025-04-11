@@ -1,7 +1,7 @@
-use super::env_spawner::SpawnEnvironmentsPlugin;
 use super::player::AddPlayerPlugin;
 use super::player_physics::*;
 use crate::animations::asset_loader::*;
+use crate::environment::environment_plugin::SpawnEnvironmentsPlugin;
 use crate::GameState;
 use avian2d::prelude::*;
 use bevy::prelude::*;

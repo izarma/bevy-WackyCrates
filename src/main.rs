@@ -4,6 +4,7 @@ use game_ui::ui_plugin::UiPlugin;
 mod animations;
 mod consts;
 mod engine;
+mod environment;
 mod game_ui;
 
 #[derive(Debug, Eq, PartialEq, Hash, Resource, States, Default, Clone)]
